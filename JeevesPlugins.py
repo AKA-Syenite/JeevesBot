@@ -32,7 +32,8 @@ def help(self, m, c, n):
 def tell(self, m, c, n):
     data = {}
     try:
-        data = pickle.load(open('tells.dat', 'rb'))
+        with open('tells.dat', 'rb') as f:
+            data = pickle.load(f)
     except:
         with open('tells.dat', 'wb') as f:
             pickle.dump(data, f, -1)
@@ -48,7 +49,8 @@ def tell(self, m, c, n):
         data[nick] = []
         data[nick].append(n + ' ' + getTimeStamp() + ' ' + message)
     sendMsg(self, c, "I'll pass that along")
-    pickle.dump(data, open('tells.dat', 'wb'))
+    with open('tells.dat', 'wb') as f:
+        pickle.dump(data, f)
     
 def quiet(self, m, c, n):
     if n != self.owner:
@@ -56,18 +58,21 @@ def quiet(self, m, c, n):
         return
     data = []
     try:
-        data = pickle.load(open('quiet.dat', 'rb'))
+        with open('quiet.dat', 'rb') as f:
+            data = pickle.load(f)
         if c in data:
             sendMsg(self, c, "Responding to commands again!")
             data.remove(c)
         else:
             sendMsg(self, c, "Not responding to commands anymore!")
             data.append(c)
-        pickle.dump(data, open('quiet.dat', 'wb'))
+        with open('quiet.dat', 'wb') as f:
+            pickle.dump(data, f)
     except:
         sendMsg(self, c, "Not responding to commands anymore!")
         data.append(c)
-        pickle.dump(data, open('quiet.dat', 'wb'))
+        with open('quiet.dat', 'wb') as f:
+            pickle.dump(data, f)
         
 def shutup(self, m, c, n):
     if n != self.owner:
@@ -75,18 +80,21 @@ def shutup(self, m, c, n):
         return
     data = []
     try:
-        data = pickle.load(open('shutup.dat', 'rb'))
+        with open('shutup.dat', 'rb') as f:
+            data = pickle.load(f)
         if c in data:
             sendMsg(self, c, "I shall speak again!")
             data.remove(c)
         else:
             sendMsg(self, c, "You won't hear a peep out of me!")
             data.append(c)
-        pickle.dump(data, open('shutup.dat', 'wb'))
+        with open('shutup.dat', 'wb') as f:
+            pickle.dump(data, f)
     except:
         sendMsg(self, c, "You won't hear a peep out of me!")
         data.append(c)
-        pickle.dump(data, open('shutup.dat', 'wb'))
+        with open('shutup.dat', 'wb') as f:
+            pickle.dump(data, f)
         
 def part(self, m, c, n):
     if n != self.owner:

@@ -104,7 +104,8 @@ def getMessage(self, l):
         
 def getShutup(m):
     try:
-        data = pickle.load(open('shutup.dat', 'rb'))
+        with open('shutup.dat', 'rb') as f:
+            data = pickle.load(f)
         if getChan(m) in data:
             isShut = True
         else:
@@ -115,7 +116,8 @@ def getShutup(m):
     
 def getQuiet(m):
     try:
-        data = pickle.load(open('quiet.dat', 'rb'))
+        with open('quiet.dat', 'rb') as f:
+            data = pickle.load(f)
         if getChannel(self, m) in data:
             isQuiet = True
         else:

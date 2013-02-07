@@ -5,7 +5,9 @@ import JeevesPlugins
 from random import choice
 from JeevesCore import *
 
-servers = {'irc.synirc.net':['JeevesBot', 'buttes', ['#kakerbot']]}
+#with open('servers.dat', 'rb') as f:
+#    servers = pickle.load(f)
+servers = {'irc.synirc.net':['JeevesBot', 'buttes', ['#plusplus', '#technic']], 'irc.esper.net':['JeevesBot', 'buttes', ['#powercrystalsmods']]}
 owner = "Shukaro"
 
 #Phrase lists
@@ -83,7 +85,8 @@ class Server:
             
             #Passing on tells
             if getCommand(m) == 'PRIVMSG':
-                data = pickle.load(open('tells.dat', 'rb'))
+                with open('tells.dat', 'rb') as f:
+                    data = pickle.load(f)
                 for key in data.keys():
                     if getNick(m).lower() == key:
                         if len(data[key]) != 0:
@@ -96,9 +99,10 @@ class Server:
                                 if not inGame:
                                     sendMsg(self, getNick(m), msg[0] + ' on ' + msg[1] + ' said ' + msg[2])
                                 else:
-                                    sendMsg(self, getChannel(self, m), msg[0] + ' on ' + msg[1] + ' said ' + msg[2])
+                                    sendMsg(self, getChannel(self, m), msg[0] + ' on ' + msg[1] + ' said: \"' + msg[2] + '\"')
                             data[key] = []
-                            pickle.dump(data, open('tells.dat', 'wb'))
+                            with open('tells.dat', 'wb') as f:
+                                pickle.dump(data, f)
             
             #Command monitering
             if getCommand(m) == 'PRIVMSG' and getMessage(self, m).startswith(self.comKey):
