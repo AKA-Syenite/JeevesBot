@@ -1,0 +1,4 @@
+JeevesBot
+=========
+
+Python IRC Bot
