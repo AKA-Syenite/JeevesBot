@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import socket, inspect, threading, os, pickle, re
+import socket, inspect, threading, os, pickle, re, ConfigParser
 import JeevesPlugins
 from random import choice
 from JeevesCore import *
@@ -9,7 +9,9 @@ try:
     with open('servers.dat', 'rb') as f:
         servers = pickle.load(f)
 except:
-    servers = {'irc.synirc.net':['JeevesBot', 'buttes', ['#kakerbot']]}
+    config = ConfigParser.RawConfigParser()
+    config.readfp(open('default.cfg'))
+    servers = {config.get('default', 'server'):[config.get('default', 'nick'), config.get('default', 'pass'), [config.get('default', 'channel')]]}
     with open('servers.dat', 'wb') as f:
         pickle.dump(servers, f)
 
