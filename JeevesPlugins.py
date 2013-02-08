@@ -8,9 +8,9 @@ def check(self, m, c, n):
         return
     sendMsg(self, c, choice(self.work))
     if subprocess.call(['ping', m]) == 0:
-        sendMsg(self, c, "It looks like " + m + " is up on my end!")
+        sendMsg(self, c, "It looks like " + m + " is up on my end.")
     else:
-        sendMsg(self, c, "Oh no! " + m + " is dead!")
+        sendMsg(self, c, "My condolences, " + m + " appears to be down.")
 
 def choose(self, m, c, n):
     try:
@@ -54,51 +54,51 @@ def tell(self, m, c, n):
     
 def quiet(self, m, c, n):
     if n != self.owner:
-        sendMsg(self, c, "You can\'t tell me what to do! YOU\'RE NOT MY REAL DAD!")
+        sendMsg(self, c, "I\'m sorry, but only authorized users may do that.")
         return
     data = []
     try:
         with open('quiet.dat', 'rb') as f:
             data = pickle.load(f)
         if c in data:
-            sendMsg(self, c, "Responding to commands again!")
+            sendMsg(self, c, "Certainly. I\'ll resume responding to commands now.")
             data.remove(c)
         else:
-            sendMsg(self, c, "Not responding to commands anymore!")
+            sendMsg(self, c, "I\'ll refrain from responding to commands from now on.")
             data.append(c)
         with open('quiet.dat', 'wb') as f:
             pickle.dump(data, f)
     except:
-        sendMsg(self, c, "Not responding to commands anymore!")
+        sendMsg(self, c, "I\'ll refrain from responding to commands from now on.")
         data.append(c)
         with open('quiet.dat', 'wb') as f:
             pickle.dump(data, f)
         
 def shutup(self, m, c, n):
     if n != self.owner:
-        sendMsg(self, c, "You can\'t tell me what to do! YOU\'RE NOT MY REAL DAD!")
+        sendMsg(self, c, "I\'m sorry, but only authorized users may do that.")
         return
     data = []
     try:
         with open('shutup.dat', 'rb') as f:
             data = pickle.load(f)
         if c in data:
-            sendMsg(self, c, "I shall speak again!")
+            sendMsg(self, c, "As you wish. I\'ll resume my usual functions.")
             data.remove(c)
         else:
-            sendMsg(self, c, "You won't hear a peep out of me!")
+            sendMsg(self, c, "I\'ll refrain from speaking from now on.")
             data.append(c)
         with open('shutup.dat', 'wb') as f:
             pickle.dump(data, f)
     except:
-        sendMsg(self, c, "You won't hear a peep out of me!")
+        sendMsg(self, c, "I\'ll refrain from speaking from now on.")
         data.append(c)
         with open('shutup.dat', 'wb') as f:
             pickle.dump(data, f)
         
 def part(self, m, c, n):
     if n != self.owner:
-        sendMsg(self, c, "You can\'t tell me what to do! YOU\'RE NOT MY REAL DAD!")
+        sendMsg(self, c, "I\'m sorry, but only authorized users may do that.")
         return
     if not m.startswith("#"):
         sendMsg(self, c, "Incorrect syntax, use " + self.comKey + "part #chan")
@@ -108,7 +108,7 @@ def part(self, m, c, n):
     
 def join(self, m, c, n):
     if n != self.owner:
-        sendMsg(self, c, "You can\'t tell me what to do! YOU\'RE NOT MY REAL DAD!")
+        sendMsg(self, c, "I\'m sorry, but only authorized users may do that.")
         return
     if not m.startswith("#"):
         sendMsg(self, c, "Incorrect syntax, use " + self.comKey + "join #chan")
@@ -118,7 +118,7 @@ def join(self, m, c, n):
     
 def quit(self, m, c, n):
     if n != self.owner:
-        sendMsg(self, c, "You can\'t tell me what to do! YOU\'RE NOT MY REAL DAD!")
+        sendMsg(self, c, "I\'m sorry, but only authorized users may do that.")
         return
     sendMsg(self, c, "Quitting " + self.server)
     self.goAway("Bye")

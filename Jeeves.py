@@ -17,10 +17,9 @@ owner = "Shukaro"
 
 #Phrase lists
 comKey = '.'
-goodbyes = ['Oh no!', 'Buh-bye!', 'Cya!', 'I hated this channel anyway!', 'Farewell!', 'Farewell, Cruel World!', 'Do KakerBots Dream of Electric Sheep?']
-work = ['Work, work...', 'Always the little guy...', 'Fine!', 'I\'ll get right on that...', 'Ugh, fine!', 'Gimme a sec...', 'You\'re so lazy...']
-quit = ['quit', 'go away', 'getout', 'scram', 'die', 'leave']
-wrong = ['Guess who\'s got two thumbs and just entered an invalid command. YOU!', 'I have no clue what you\'re talking about.', 'That command is completely wrong.', 'Try again, buster.', 'That, is an invalid command']
+goodbyes = ['Good-bye', 'I bid you adieu', 'Farewell']
+work = ['One moment please...', 'Right away, sir.']
+wrong = ['I\'m terribly sorry, but that is an invalid command.', 'My apologies, but that is wrong.', 'I\'m not sure I understand you.', 'Come again?']
 commandlist = ['check', 'choose', 'google', 'help', 'tell', 'quiet', 'shutup', 'part', 'join', 'quit']
 inGame = False
 
@@ -105,7 +104,7 @@ class Server:
                             for e in data[key]:
                                 msg = e.split(' ', 2)
                                 if not inGame:
-                                    sendMsg(self, getNick(m), msg[0] + ' on ' + msg[1] + ' said ' + msg[2])
+                                    sendMsg(self, getNick(m), msg[0] + ' on ' + msg[1] + ' said: \"' + msg[2] + '\"')
                                 else:
                                     sendMsg(self, getChannel(self, m), msg[0] + ' on ' + msg[1] + ' said: \"' + msg[2] + '\"')
                             data[key] = []
