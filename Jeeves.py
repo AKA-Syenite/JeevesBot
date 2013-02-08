@@ -5,9 +5,14 @@ import JeevesPlugins
 from random import choice
 from JeevesCore import *
 
-#with open('servers.dat', 'rb') as f:
-#    servers = pickle.load(f)
-servers = {'irc.synirc.net':['JeevesBot', 'buttes', ['#plusplus', '#technic']], 'irc.esper.net':['JeevesBot', 'buttes', ['#powercrystalsmods']]}
+try:
+    with open('servers.dat', 'rb') as f:
+        servers = pickle.load(f)
+except:
+    servers = {'irc.synirc.net':['JeevesBot', 'buttes', ['#kakerbot']]}
+    with open('servers.dat', 'wb') as f:
+        pickle.dump(servers, f)
+
 owner = "Shukaro"
 
 #Phrase lists
@@ -85,8 +90,11 @@ class Server:
             
             #Passing on tells
             if getCommand(m) == 'PRIVMSG':
-                with open('tells.dat', 'rb') as f:
-                    data = pickle.load(f)
+                try:
+                    with open('tells.dat', 'rb') as f:
+                        data = pickle.load(f)
+                except:
+                    data = {}
                 for key in data.keys():
                     if getNick(m).lower() == key:
                         if len(data[key]) != 0:
