@@ -116,9 +116,65 @@ def join(self, m, c, n):
     sendMsg(self, c, "Joining " + m)
     self.irc.send("JOIN " + m + " :\r\n")
     
+def removechannel(self, m, c, n):
+    if n != self.owner:
+        sendMsg(self, c, "I\'m sorry, but only authorized users may do that.")
+        return
+    if not m.startswith("#"):
+        sendMsg(self, c, "Incorrect syntax, use " + self.comKey + "join #chan")
+        return
+    sendMsg(self, c, "Removing channel " + m)
+    with open('servers.dat', 'rb') as f:
+        servers = pickle.load(f)
+    servers[self.server][2].remove(m)
+    with open('servers.dat', 'wb') as f:
+        pickle.dump(servers, f)
+    part(self, m, c, n)
+    
+def addchannel(self, m, c, n):
+    if n != self.owner:
+        sendMsg(self, c, "I\'m sorry, but only authorized users may do that.")
+        return
+    if not m.startswith("#"):
+        sendMsg(self, c, "Incorrect syntax, use " + self.comKey + "join #chan")
+        return
+    sendMsg(self, c, "Adding channel " + m)
+    with open('servers.dat', 'rb') as f:
+        servers = pickle.load(f)
+    servers[self.server][2].append(m)
+    with open('servers.dat', 'wb') as f:
+        pickle.dump(servers, f)
+    join(self, m, c, n)
+    
+def addserver(self, m, c, n):
+    if n != self.owner:
+        sendMsg(self, c, "I\'m sorry, but only authorized users may do that.")
+        return
+    try:
+        with open('servers.dat', 'rb') as f:
+            servers = pickle.load(f)
+        sendMsg(self, c, "Adding " + m.split()[0] + " to the server list using the nick/pass combo \'" + m.split()[1] + " " + m.split()[2] + "\' and an empty channel list")
+        servers[m.split()[0]] = [m.split()[1], m.split()[2], []]
+        with open('servers.dat', 'wb') as f:
+            pickle.dump(servers, f)
+    except:
+        sendMsg(self, c, "Incorrect syntax, use " + self.comKey + "addserver irc.example.net")
+        
+def removeserver(self, m, c, n):
+    if n != self.owner:
+        sendMsg(self, c, "I\'m sorry, but only authorized users may do that.")
+        return
+    with open('servers.dat', 'rb') as f:
+        servers = pickle.load(f)
+    sendMsg(self, c, "Removing " + self.server + " from serverlist")
+    del servers[self.server]
+    with open('servers.dat', 'wb') as f:
+        pickle.dump(servers, f)
+    quit(self, m, c, n)
+    
 def quit(self, m, c, n):
     if n != self.owner:
         sendMsg(self, c, "I\'m sorry, but only authorized users may do that.")
         return
     sendMsg(self, c, "Quitting " + self.server)
-    self.goAway("Bye")
+    goAway(self, "Bye")
