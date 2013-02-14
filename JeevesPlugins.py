@@ -39,7 +39,7 @@ def tell(self, m, c, n):
             pickle.dump(data, f, -1)
     try:
         nick = m.split(' ')[0].lower()
-        message = m.split(' ')[1]
+        message = m.split(' ', 1)[1]
     except:
         sendMsg(self, c, "Incorrect syntax, use " + self.comKey + "tell nick message")
         return
@@ -92,6 +92,28 @@ def shutup(self, m, c, n):
             pickle.dump(data, f)
     except:
         sendMsg(self, c, "I\'ll refrain from speaking from now on.")
+        data.append(c)
+        with open('shutup.dat', 'wb') as f:
+            pickle.dump(data, f)
+
+def ignore(self, m, c, n):
+    if n != self.owner:
+        sendMsg(self, c, "I\'m sorry, but only authorized users may do that.")
+        return
+        data = []
+    try:
+        with open('ignore.dat', 'rb') as f:
+            data = pickle.load(f)
+        if m in data:
+            sendMsg(self, c, "As you wish. I\'ll respond to " + m + " again.")
+            data.remove(m)
+        else:
+            sendMsg(self, c, "I\'ll refrain from speaking to " + m + " from now on.")
+            data.append(m)
+        with open('ignore.dat', 'wb') as f:
+            pickle.dump(data, f)
+    except:
+        sendMsg(self, c, "I\'ll refrain from speaking to " + m + " from now on.")
         data.append(c)
         with open('shutup.dat', 'wb') as f:
             pickle.dump(data, f)

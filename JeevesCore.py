@@ -124,3 +124,16 @@ def getQuiet(m):
             isQuiet = False
     except:
         isQuiet = False
+    return isQuiet
+        
+def getIgnore(m):
+    try:
+        with open('ignore.dat', 'rb') as f:
+            data = pickle.load(f)
+        if getNick(m) in data:
+            isIgnored = True
+        else:
+            isIgnored = False
+    except:
+        isIgnored = False
+    return isIgnored

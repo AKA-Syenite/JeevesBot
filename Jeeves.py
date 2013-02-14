@@ -21,7 +21,7 @@ comKey = '.'
 goodbyes = ['Good-bye', 'I bid you adieu', 'Farewell']
 work = ['One moment please...', 'Right away, sir.']
 wrong = ['I\'m terribly sorry, but that is an invalid command.', 'My apologies, but that is wrong.', 'I\'m not sure I understand you.', 'Come again?']
-commandlist = ['check', 'choose', 'google', 'help', 'tell', 'quiet', 'shutup', 'part', 'join', 'quit', 'addserver', 'addchannel', 'removeserver', 'removechannel']
+commandlist = ['check', 'choose', 'google', 'help', 'tell', 'quiet', 'shutup', 'part', 'join', 'quit', 'addserver', 'addchannel', 'removeserver', 'removechannel', 'ignore']
 inGame = False
 
 repos = ['powercrystals/minefactoryreloaded', 'powercrystals/powercrystalscore', 'powercrystals/netherores']
@@ -77,6 +77,9 @@ class Server:
                         joinChan(self, c)
             
             if getShutup(m) and getNick(m) != owner:
+                continue
+                
+            if getIgnore(m):
                 continue
                 
             #Moniter for URLs
