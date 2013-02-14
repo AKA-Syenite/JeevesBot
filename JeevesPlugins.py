@@ -100,7 +100,7 @@ def ignore(self, m, c, n):
     if n != self.owner:
         sendMsg(self, c, "I\'m sorry, but only authorized users may do that.")
         return
-        data = []
+    data = []
     try:
         with open('ignore.dat', 'rb') as f:
             data = pickle.load(f)

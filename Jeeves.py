@@ -3,6 +3,7 @@
 import socket, inspect, threading, os, pickle, re, ConfigParser
 import JeevesPlugins
 from random import choice
+from threading import Timer
 from JeevesCore import *
 
 try:
@@ -41,6 +42,8 @@ class Server:
         self.isConnected = False
         self.identified = False
         self.work = work
+        self.throttle = []
+        self.throttledelay = 10
         self.commands = commandlist
         
     def connect(self):
@@ -79,7 +82,7 @@ class Server:
             if getShutup(m) and getNick(m) != owner:
                 continue
                 
-            if getIgnore(m):
+            if getIgnore(m) or getThrottle(self, m):
                 continue
                 
             #Moniter for URLs
@@ -126,7 +129,7 @@ class Server:
                     eval("JeevesPlugins." + cmd + "(self, \'" + msg + "\', getChannel(self, m), getNick(m))")
                 else:
                     sendMsg(self, getChannel(self, m), choice(wrong))
-                    sendMsg(self, getChannel(self, m), "Type " + self.comKey +  "help for a list of available commands")            
+                    sendMsg(self, getChannel(self, m), "Type " + self.comKey +  "help for a list of available commands")
 
 serverlist = {}
 threads = {}

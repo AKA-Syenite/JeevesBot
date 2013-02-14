@@ -137,3 +137,9 @@ def getIgnore(m):
     except:
         isIgnored = False
     return isIgnored
+    
+def getThrottle(self, m):
+    if getChannel(self, m) in self.throttle:
+        return True
+    else:
+        return False
