@@ -1,8 +1,6 @@
 #!/usr/bin/python
 
-import socket, inspect, threading, os, pickle, re, ConfigParser
-import JeevesPlugins
-from random import choice
+import socket, inspect, threading, os, pickle, re, ConfigParser, subprocess, time
 from threading import Timer
 from JeevesCore import *
 
@@ -19,13 +17,6 @@ except:
 owner = "Shukaro"
 
 comKey = '.'
-goodbyes = ['Good-bye', 'I bid you adieu', 'Farewell']
-work = ['One moment please...', 'Right away, sir.']
-wrong = ['I\'m terribly sorry, but that is an invalid command.', 'My apologies, but that is wrong.', 'I\'m not sure I understand you.', 'Come again?']
-commandlist = ['check', 'choose', 'google', 'help', 'tell', 'quiet', 'shutup', 'part', 'join', 'quit', 'addserver', 'addchannel', 'removeserver', 'removechannel', 'ignore']
-inGame = False
-
-repos = ['powercrystals/minefactoryreloaded', 'powercrystals/powercrystalscore', 'powercrystals/netherores']
 
 class Server:
 
@@ -41,10 +32,6 @@ class Server:
         self.tag = self.server + ":" + str(self.port) + " :: "
         self.isConnected = False
         self.identified = False
-        self.work = work
-        self.throttle = []
-        self.throttledelay = 10
-        self.commands = commandlist
         
     def connect(self):
         try:
@@ -54,20 +41,21 @@ class Server:
             print("Connection to " + self.server + ":" + str(self.port) + " failed.")
             exit(0)
         print("Connection to " + self.server + ":" + str(self.port) + " succeeded!")
-        print(self.tag + "Sending PASS")
-        self.irc.send("PASS " + self.pw + '\r\n')
+        print(self.tag + "Sending USER")
+        self.irc.send("USER " + self.nick + " 8 * :" + self.nick + "\r\n")
         print(self.tag + "Sending NICK")
         self.irc.send("NICK " + self.nick + '\r\n')
-        print(self.tag + "Sending USER")
-        self.irc.send("USER " + self.nick + " 8 * :At your service\r\n")
+        print(self.tag + "Sending PASS")
+        self.irc.send("PASS " + self.pw + '\r\n')
         self.isConnected = True
         self.listen()
     
     def listen(self):
+        print(self.tag + "Listening")
         while self.isConnected:
             msg = self.irc.recv(4096)
             m = splitMsg(msg)
-            
+
             #Respond to PING and identify if necessary
             if m[1].find('PING') != -1:
                 print(self.tag + "Ponging with: " + m[2][0].strip('\r\n'))
@@ -79,20 +67,6 @@ class Server:
                     for c in self.chan:
                         joinChan(self, c)
             
-            if getShutup(m) and getNick(m) != owner:
-                continue
-                
-            if getIgnore(m) or getThrottle(self, m):
-                continue
-                
-            #Moniter for URLs
-            urls = re.findall(r'(https?://\S+)', getMessage(self, m))
-            for url in urls:
-                if 'twitter.com' in url and '/status/' in url:
-                    getTweet(self, m, url)
-                if 'youtube.com' in url:
-                    getYouTube(self, m, url)
-            
             #Passing on tells
             if getCommand(m) == 'PRIVMSG':
                 try:
@@ -103,34 +77,226 @@ class Server:
                 for key in data.keys():
                     if getNick(m).lower() == key:
                         if len(data[key]) != 0:
-                            if not inGame:
-                                sendMsg(self, getNick(m), "You have " + str(len(data[key])) + " new messages.")
-                            else:
-                                sendMsg(self, getChannel(self, m), "You have " + str(len(data[key])) + " new messages.")
+                            sendMsg(self, getNick(m), "You have " + str(len(data[key])) + " new message(s).")
                             for e in data[key]:
                                 msg = e.split(' ', 2)
-                                if not inGame:
-                                    sendMsg(self, getNick(m), msg[0] + ' on ' + msg[1] + ' said: \"' + msg[2] + '\"')
-                                else:
-                                    sendMsg(self, getChannel(self, m), msg[0] + ' on ' + msg[1] + ' said: \"' + msg[2] + '\"')
+                                sendMsg(self, getNick(m), msg[0] + ' on ' + msg[1] + ' - ' + msg[2])
                             data[key] = []
                             with open('tells.dat', 'wb') as f:
                                 pickle.dump(data, f)
+
+            if getIgnore(m) and getNick(m) != self.owner:
+                continue
+
+            #Moniter for URLs
+            urls = re.findall(r'(https?://\S+)', getMessage(self, m))
+            for url in urls:
+                if 'twitter.com' in url and '/status/' in url:
+                    getTweet(self, m, url)
             
             #Command monitering
             if getCommand(m) == 'PRIVMSG' and getMessage(self, m).startswith(self.comKey):
-                if getQuiet(m) and getNick(m) != owner:
-                    continue
                 msg = getMessage(self, m)[1:].strip('\r\n')
                 cmd = msg.split()[0]
                 msg = msg[len(cmd)+1:]
-                if cmd in commandlist:
-                    msg = msg.replace('\'', '\\\'')
-                    eval("JeevesPlugins." + cmd + "(self, \'" + msg + "\', getChannel(self, m), getNick(m))")
-                else:
-                    sendMsg(self, getChannel(self, m), choice(wrong))
-                    sendMsg(self, getChannel(self, m), "Type " + self.comKey +  "help for a list of available commands")
+                if cmd == 'tell':
+                    tell(self, msg, getChannel(self, m), getNick(m))
+                elif cmd == 'part':
+                    part(self, msg, getChannel(self, m), getNick(m))
+                elif cmd == 'join':
+                    join(self, msg, getChannel(self, m), getNick(m))
+                elif cmd == 'removechannel':
+                    removechannel(self, msg, getChannel(self, m), getNick(m))
+                elif cmd == 'addchannel':
+                    addchannel(self, msg, getChannel(self, m), getNick(m))
+                elif cmd == 'removeserver':
+                    removeserver(self, msg, getChannel(self, m), getNick(m))
+                elif cmd == 'addserver':
+                    addserver(self, msg, getChannel(self, m), getNick(m))
+                elif cmd == 'quit':
+                    quit(self, msg, getChannel(self, m), getNick(m))
+                elif cmd == 'ignore':
+                    ignore(self, msg, getChannel(self, m), getNick(m))
+                elif cmd == 'unignore':
+                    unignore(self, msg, getChannel(self, m), getNick(m))
+                elif cmd == 'ignorelist':
+                    ignorelist(self, msg, getChannel(self, m), getNick(m))
+                elif cmd == 'unignoreall':
+                    unignoreall(self, msg, getChannel(self, m), getNick(m))
 
+#Commands
+def tell(self, m, c, n):
+    data = {}
+    try:
+        with open('tells.dat', 'rb') as f:
+            data = pickle.load(f)
+    except:
+        with open('tells.dat', 'wb') as f:
+            pickle.dump(data, f, -1)
+    try:
+        nick = m.split(' ')[0].lower()
+        message = m.split(' ', 1)[1]
+    except:
+        sendMsg(self, c, "Incorrect syntax, use " + self.comKey + "tell nick message")
+        return
+    try:
+        data[nick].append(n + ' ' + getTimeStamp() + ' ' + message)
+    except:
+        data[nick] = []
+        data[nick].append(n + ' ' + getTimeStamp() + ' ' + message)
+    sendMsg(self, c, "I'll pass that along")
+    with open('tells.dat', 'wb') as f:
+        pickle.dump(data, f)
+
+def ignore(self, m, c, n):
+    if n != self.owner:
+        sendMsg(self, c, "I\'m sorry, but only authorized users may do that.")
+        return
+    data = []
+    try:
+        with open('ignore.dat', 'rb') as f:
+            data = pickle.load(f)
+        if m in data:
+            sendMsg(self, c, "Already ignoring " + m)
+        else:
+            sendMsg(self, c, "Ignoring " + m)
+            data.append(m)
+        with open('ignore.dat', 'wb') as f:
+            pickle.dump(data, f)
+    except:
+        sendMsg(self, c, "Ignoring " + m)
+        data.append(m)
+        with open('ignore.dat', 'wb') as f:
+            pickle.dump(data, f)
+
+def unignore(self, m, c, n):
+    if n != self.owner:
+        sendMsg(self, c, "I\'m sorry, but only authorized users may do that.")
+        return
+    data = []
+    try:
+        with open('ignore.dat', 'rb') as f:
+            data = pickle.load(f)
+        if m in data:
+            sendMsg(self, c, "Unignoring " + m)
+            data.remove(m)
+        else:
+            sendMsg(self, c, "Already unignoring " + m)
+        with open('ignore.dat', 'wb') as f:
+            pickle.dump(data, f)
+    except:
+        sendMsg(self, c, "Already unignoring " + m)
+        with open('ignore.dat', 'wb') as f:
+            pickle.dump(data, f)
+
+def unignoreall(self, m, c, n):
+    if n != self.owner:
+        sendMsg(self, c, "I\'m sorry, but only authorized users may do that.")
+        return
+    data = []
+    sendMsg(self, c, "Clearing the ignore list")
+    with open('ignore.dat', 'wb') as f:
+            pickle.dump(data, f)
+
+def ignorelist(self, m, c, n):
+    if n != self.owner:
+        sendMsg(self, c, "I\'m sorry, but only authorized users may do that.")
+        return
+    data = []
+    try:
+        with open('ignore.dat', 'rb') as f:
+            data = pickle.load(f)
+        sendMsg(self, c, "Ignoring the following ::")
+        for m in data:
+            sendMsg(self, c, m)
+    except:
+        sendMsg(self, c, "Ignoring nothing")
+
+        
+def part(self, m, c, n):
+    if n != self.owner:
+        sendMsg(self, c, "I\'m sorry, but only authorized users may do that.")
+        return
+    if not m.startswith("#"):
+        sendMsg(self, c, "Incorrect syntax, use " + self.comKey + "part #chan")
+        return
+    sendMsg(self, c, "Parting " + m)
+    self.irc.send("PART " + m + " :\r\n")
+    
+def join(self, m, c, n):
+    if n != self.owner:
+        sendMsg(self, c, "I\'m sorry, but only authorized users may do that.")
+        return
+    if not m.startswith("#"):
+        sendMsg(self, c, "Incorrect syntax, use " + self.comKey + "join #chan")
+        return
+    sendMsg(self, c, "Joining " + m)
+    self.irc.send("JOIN " + m + " :\r\n")
+    
+def removechannel(self, m, c, n):
+    if n != self.owner:
+        sendMsg(self, c, "I\'m sorry, but only authorized users may do that.")
+        return
+    if not m.startswith("#"):
+        sendMsg(self, c, "Incorrect syntax, use " + self.comKey + "join #chan")
+        return
+    sendMsg(self, c, "Removing channel " + m)
+    with open('servers.dat', 'rb') as f:
+        servers = pickle.load(f)
+    servers[self.server][2].remove(m)
+    with open('servers.dat', 'wb') as f:
+        pickle.dump(servers, f)
+    part(self, m, c, n)
+    
+def addchannel(self, m, c, n):
+    if n != self.owner:
+        sendMsg(self, c, "I\'m sorry, but only authorized users may do that.")
+        return
+    if not m.startswith("#"):
+        sendMsg(self, c, "Incorrect syntax, use " + self.comKey + "join #chan")
+        return
+    sendMsg(self, c, "Adding channel " + m)
+    with open('servers.dat', 'rb') as f:
+        servers = pickle.load(f)
+    servers[self.server][2].append(m)
+    with open('servers.dat', 'wb') as f:
+        pickle.dump(servers, f)
+    join(self, m, c, n)
+    
+def addserver(self, m, c, n):
+    if n != self.owner:
+        sendMsg(self, c, "I\'m sorry, but only authorized users may do that.")
+        return
+    try:
+        with open('servers.dat', 'rb') as f:
+            servers = pickle.load(f)
+        sendMsg(self, c, "Adding " + m.split()[0] + " to the server list using the nick/pass combo \'" + m.split()[1] + " " + m.split()[2] + "\' and an empty channel list")
+        servers[m.split()[0]] = [m.split()[1], m.split()[2], []]
+        with open('servers.dat', 'wb') as f:
+            pickle.dump(servers, f)
+    except:
+        sendMsg(self, c, "Incorrect syntax, use " + self.comKey + "addserver irc.example.net nick pass")
+        
+def removeserver(self, m, c, n):
+    if n != self.owner:
+        sendMsg(self, c, "I\'m sorry, but only authorized users may do that.")
+        return
+    with open('servers.dat', 'rb') as f:
+        servers = pickle.load(f)
+    sendMsg(self, c, "Removing " + self.server + " from serverlist")
+    del servers[self.server]
+    with open('servers.dat', 'wb') as f:
+        pickle.dump(servers, f)
+    quit(self, m, c, n)
+    
+def quit(self, m, c, n):
+    if n != self.owner:
+        sendMsg(self, c, "I\'m sorry, but only authorized users may do that.")
+        return
+    sendMsg(self, c, "Quitting " + self.server)
+    goAway(self, "Bye")
+
+#Boot 'er up
 serverlist = {}
 threads = {}
 for s, d in servers.iteritems():

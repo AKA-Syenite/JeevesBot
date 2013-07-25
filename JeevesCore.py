@@ -38,27 +38,9 @@ def joinChan(self, c):
     print(self.tag + "Joining " + c)
     self.irc.send("JOIN " + c + "\r\n")
     
-def goAway(self, m):
-    print(self.tag + "Quitting with message: " + m)
-    self.irc.send("QUIT :" + m + "\r\n")
-    self.isConnected = False
-    
 def getTimeStamp():
     now = datetime.datetime.now()
     return str(now.year) + '/' + str(now.month) + '/' + str(now.day) + '|' + str(now.hour) + ':' + str(now.minute) + ':' + str(now.second)
-
-#API methods
-def getTweet(self, m, url):
-    id = url[url.find('/status/')+8:]
-    r = requests.get('http://api.twitter.com/1/statuses/show.json?id=' + id).json()
-    try:
-        sendMsg(self, getChannel(self, m), '@\00313' + r['user']['screen_name'] + '\003 :: ' + r['text'])
-    except:
-        sendMsg(self, getChannel(self, m), 'I\'m terribly sorry, I couldn\'t get that tweet.')
-        print r
-
-def getYouTube(url):
-    pass
     
 #These take the list object from splitMsg
 def getPrefix(l):
@@ -101,31 +83,7 @@ def getMessage(self, l):
     except:
         message = ''
     return message
-        
-def getShutup(m):
-    try:
-        with open('shutup.dat', 'rb') as f:
-            data = pickle.load(f)
-        if getChan(m) in data:
-            isShut = True
-        else:
-            isShut = False
-    except:
-        isShut = False
-    return isShut
-    
-def getQuiet(m):
-    try:
-        with open('quiet.dat', 'rb') as f:
-            data = pickle.load(f)
-        if getChannel(self, m) in data:
-            isQuiet = True
-        else:
-            isQuiet = False
-    except:
-        isQuiet = False
-    return isQuiet
-        
+
 def getIgnore(m):
     try:
         with open('ignore.dat', 'rb') as f:
@@ -137,9 +95,12 @@ def getIgnore(m):
     except:
         isIgnored = False
     return isIgnored
-    
-def getThrottle(self, m):
-    if getChannel(self, m) in self.throttle:
-        return True
-    else:
-        return False
+
+def getTweet(self, m, url):
+    id = url[url.find('/status/')+8:]
+    r = requests.get('http://api.twitter.com/1/statuses/show.json?id=' + id).json()
+    try:
+        sendMsg(self, getChannel(self, m), '@\00313' + r['user']['screen_name'] + '\003 :: ' + r['text'])
+    except:
+        sendMsg(self, getChannel(self, m), 'I couldn\'t get that tweet, sorry.')
+        print r
