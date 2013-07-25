@@ -1,5 +1,5 @@
 import datetime, requests, json, ConfigParser, pickle, os
-from oauth_hook import OAuthHook
+from requests_oauthlib import OAuth1Session
 
 def splitMsg(s):
     s.strip('\r\n')
@@ -122,10 +122,10 @@ def getTweet(self, m, url):
     access_token_secret = config.get('twitter', 'access_token_secret')
     consumer_key = config.get('twitter', 'consumer_key')
     consumer_secret = config.get('twitter', 'consumer_secret')
-    oauth_hook = OAuthHook(access_token, access_token_secret, consumer_key, consumer_secret, header_auth=True)
+    twitter = OAuth1Session(access_token, access_token_secret, consumer_key, consumer_secret)
 
     id = url[url.find('/status/')+8:]
-    r = requests.get('http://api.twitter.com/1.1/statuses/show.json?id=' + id, hooks={'pre_request': oauth_hook}).json()
+    r = twitter.get('http://api.twitter.com/1.1/statuses/show.json?id=' + id).json()
     try:
         sendMsg(self, getChannel(self, m), '@\00313' + r['user']['screen_name'] + '\003 :: ' + r['text'])
     except:
