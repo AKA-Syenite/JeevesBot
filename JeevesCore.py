@@ -122,7 +122,7 @@ def getTweet(self, m, url):
     access_token_secret = config.get('twitter', 'access_token_secret')
     consumer_key = config.get('twitter', 'consumer_key')
     consumer_secret = config.get('twitter', 'consumer_secret')
-    twitter = OAuth1Session(access_token, access_token_secret, consumer_key, consumer_secret)
+    twitter = OAuth1Session(consumer_key, consumer_secret, access_token, access_token_secret)
 
     id = url[url.find('/status/')+8:]
     r = twitter.get('http://api.twitter.com/1.1/statuses/show.json?id=' + id).json()
