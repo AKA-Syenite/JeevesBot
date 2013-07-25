@@ -77,10 +77,10 @@ class Server:
                 for key in data.keys():
                     if getNick(m).lower() == key:
                         if len(data[key]) != 0:
-                            sendMsg(self, getNick(m), "You have " + str(len(data[key])) + " new message(s).")
+                            sendNtc(self, getNick(m), "You have " + str(len(data[key])) + " new message(s).")
                             for e in data[key]:
                                 msg = e.split(' ', 2)
-                                sendMsg(self, getNick(m), msg[0] + ' on ' + msg[1] + ' - ' + msg[2])
+                                sendNtc(self, getNick(m), msg[0] + ' on ' + msg[1] + ' - ' + msg[2])
                             data[key] = []
                             with open('tells.dat', 'wb') as f:
                                 pickle.dump(data, f)

@@ -1,4 +1,5 @@
-import datetime, requests, json
+import datetime, requests, json, ConfigParser, pickle, os
+from oauth_hook import OAuthHook
 
 def splitMsg(s):
     s.strip('\r\n')
@@ -33,6 +34,23 @@ def sendMsg(self, c, m):
             self.irc.send("PRIVMSG " + c + " :" + i + "\r\n")
     else:
         self.irc.send("PRIVMSG " + c + " :" + m + "\r\n")
+
+def sendNtc(self, c, m):
+    print(self.tag + c + " :: " + m)
+    maxsize = 512 - 14 - len(c)
+    if len(m) > maxsize:
+        count = int(math.ceil(len(m) / maxsize))
+        print(self.tag + "Message is " + str(len(m)) + " bytes long, splitting into " + str(count) + " pieces.")
+        msglist = []
+        for x in range(0,count+1):
+            if (x+1)*maxsize > len(m):
+                msglist.append(m[x*maxsize:])
+            else:
+                msglist.append(m[x*maxsize:(x+1)*maxsize])
+        for i in msglist:
+            self.irc.send("NOTICE " + c + " :" + i + "\r\n")
+    else:
+        self.irc.send("NOTICE " + c + " :" + m + "\r\n")
 
 def joinChan(self, c):
     print(self.tag + "Joining " + c)
@@ -97,8 +115,19 @@ def getIgnore(m):
     return isIgnored
 
 def getTweet(self, m, url):
+    config = ConfigParser.RawConfigParser()
+    config.readfp(open('default.cfg'))
+
+    access_token = config.get('twitter', 'access_token')
+    access_token_secret = config.get('twitter', 'access_token_secret')
+    consumer_key = config.get('twitter', 'consumer_key')
+    consumer_secret = config.get('twitter', 'consumer_secret')
+
+    oauth_hook = OAuthHook(access_token, access_token_secret, consumer_key, consumer_secret, header_auth=True)
+    client = requests.session(hooks={'pre_request': oauth_hook})
+
     id = url[url.find('/status/')+8:]
-    r = requests.get('http://api.twitter.com/1/statuses/show.json?id=' + id).json()
+    r = client.get('http://api.twitter.com/1.1/statuses/show.json?id=' + id).json()
     try:
         sendMsg(self, getChannel(self, m), '@\00313' + r['user']['screen_name'] + '\003 :: ' + r['text'])
     except:
