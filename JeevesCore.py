@@ -113,10 +113,10 @@ def getIgnore(m):
             data = pickle.load(f)
         for n in data:
             if re.match(n, splitMsg(m)[0]):
-                return true
-        return false
+                return True
+        return False
     except:
-        return false
+        return False
 
 def getTweet(self, m, url):
     config = ConfigParser.RawConfigParser()
