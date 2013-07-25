@@ -122,12 +122,10 @@ def getTweet(self, m, url):
     access_token_secret = config.get('twitter', 'access_token_secret')
     consumer_key = config.get('twitter', 'consumer_key')
     consumer_secret = config.get('twitter', 'consumer_secret')
-
     oauth_hook = OAuthHook(access_token, access_token_secret, consumer_key, consumer_secret, header_auth=True)
-    client = requests.session(hooks={'pre_request': oauth_hook})
 
     id = url[url.find('/status/')+8:]
-    r = client.get('http://api.twitter.com/1.1/statuses/show.json?id=' + id).json()
+    r = requests.get('http://api.twitter.com/1.1/statuses/show.json?id=' + id, hooks={'pre_request': oauth_hook}).json()
     try:
         sendMsg(self, getChannel(self, m), '@\00313' + r['user']['screen_name'] + '\003 :: ' + r['text'])
     except:
