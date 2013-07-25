@@ -55,7 +55,7 @@ class Server:
         while self.isConnected:
             msg = self.irc.recv(4096)
             m = splitMsg(msg)
-
+            
             #Respond to PING and identify if necessary
             if m[1].find('PING') != -1:
                 print(self.tag + "Ponging with: " + m[2][0].strip('\r\n'))

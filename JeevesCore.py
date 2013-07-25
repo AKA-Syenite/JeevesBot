@@ -1,4 +1,4 @@
-import datetime, requests, json, ConfigParser, pickle, os
+import datetime, requests, json, ConfigParser, pickle, os, re
 from requests_oauthlib import OAuth1Session
 
 def splitMsg(s):
@@ -55,6 +55,11 @@ def sendNtc(self, c, m):
 def joinChan(self, c):
     print(self.tag + "Joining " + c)
     self.irc.send("JOIN " + c + "\r\n")
+
+def goAway(self, m):
+    print(self.tag + "Quitting with message: " + m)
+    self.irc.send("QUIT :" + m + "\r\n")
+    self.isConnected = False
     
 def getTimeStamp():
     now = datetime.datetime.now()
@@ -106,13 +111,12 @@ def getIgnore(m):
     try:
         with open('ignore.dat', 'rb') as f:
             data = pickle.load(f)
-        if getNick(m) in data:
-            isIgnored = True
-        else:
-            isIgnored = False
+        for n in data:
+            if re.match(n, splitMsg(m)[0]):
+                return true
+        return false
     except:
-        isIgnored = False
-    return isIgnored
+        return false
 
 def getTweet(self, m, url):
     config = ConfigParser.RawConfigParser()
