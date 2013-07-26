@@ -39,7 +39,8 @@ class Server:
             self.irc.connect((self.server, self.port))
         except:
             print("Connection to " + self.server + ":" + str(self.port) + " failed.")
-            exit(0)
+            print(self.tag + "Attempting to reconnect in 10 seconds")
+            self.reconnect()
         print("Connection to " + self.server + ":" + str(self.port) + " succeeded!")
         print(self.tag + "Sending USER")
         self.irc.send("USER " + self.nick + " 8 * :" + self.nick + "\r\n")
@@ -50,10 +51,19 @@ class Server:
         self.isConnected = True
         print(self.tag + "Listening")
         self.listen()
+
+    def reconnect(self):
+        time.sleep(10)
+        self.connect()
     
     def listen(self):
         while self.isConnected:
             msg = self.irc.recv(4096)
+            if len(msg) == 0:
+                print(self.tag + "Connection lost, attempting to reconnect in 10 seconds")
+                self.identified = False
+                self.isConnected = False
+                break
             m = splitMsg(msg)
 
             #Respond to PING and identify if necessary
@@ -66,6 +76,13 @@ class Server:
                     self.identified = True
                     for c in self.chan:
                         joinChan(self, c)
+
+            #Rejoin if kicked
+            if getCommand(m) == 'KICK' and getMessage(m).startswith(self.nick):
+                print(self.tag + "Kicked from " + getChannel(m) + ", rejoining in 5 seconds")
+                time.sleep(5)
+                joinChan(self, getChannel(m))
+                continue
             
             #Passing on tells
             if getCommand(m) == 'PRIVMSG':
@@ -123,6 +140,9 @@ class Server:
                     ignorelist(self, msg, getChannel(self, m), getNick(m))
                 elif cmd == 'unignoreall':
                     unignoreall(self, msg, getChannel(self, m), getNick(m))
+        
+        if not self.isConnected:
+            self.reconnect()
 
 #Commands
 def tell(self, m, c, n):
