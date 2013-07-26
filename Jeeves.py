@@ -48,10 +48,10 @@ class Server:
         print(self.tag + "Sending PASS")
         self.irc.send("PASS " + self.pw + '\r\n')
         self.isConnected = True
+        print(self.tag + "Listening")
         self.listen()
     
     def listen(self):
-        print(self.tag + "Listening")
         while self.isConnected:
             msg = self.irc.recv(4096)
             m = splitMsg(msg)
