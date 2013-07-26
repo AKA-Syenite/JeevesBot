@@ -78,7 +78,7 @@ class Server:
                         joinChan(self, c)
 
             #Rejoin if kicked
-            if getCommand(m) == 'KICK' and getMessage(m).startswith(self.nick):
+            if getCommand(m) == 'KICK' and getMessage(self, m).startswith(self.nick):
                 print(self.tag + "Kicked from " + getChannel(m) + ", rejoining in 5 seconds")
                 time.sleep(5)
                 joinChan(self, getChannel(m))
