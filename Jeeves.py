@@ -79,9 +79,9 @@ class Server:
 
             #Rejoin if kicked
             if getCommand(m) == 'KICK' and getMessage(self, m).startswith(self.nick):
-                print(self.tag + "Kicked from " + getChannel(m) + ", rejoining in 5 seconds")
+                print(self.tag + "Kicked from " + getChannel(self, m) + ", rejoining in 5 seconds")
                 time.sleep(5)
-                joinChan(self, getChannel(m))
+                joinChan(self, getChannel(self, m))
                 continue
             
             #Passing on tells
