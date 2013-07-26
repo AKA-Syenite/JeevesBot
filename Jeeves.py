@@ -55,11 +55,11 @@ class Server:
         while self.isConnected:
             msg = self.irc.recv(4096)
             m = splitMsg(msg)
-            
+
             #Respond to PING and identify if necessary
-            if m[1].find('PING') != -1:
-                print(self.tag + "Ponging with: " + m[2][0].strip('\r\n'))
-                self.irc.send("PONG :" + m[2][0] + '\r\n')
+            if msg.find('PING :') != -1:
+                print(self.tag + "Ponging with: " + msg[msg.find('PING :')+6:].strip('\r\n'))
+                self.irc.send("PONG :" + msg[msg.find('PING :')+6:].strip('\r\n') + '\r\n')
                 if not self.identified:
                     print(self.tag + "Identifying")
                     self.irc.send("PRIVMSG nickserv :identify " + self.pw + "\r\n")
